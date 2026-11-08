@@ -24,4 +24,5 @@ app.include_router(analytics.router)
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    """`llm_mode` tells the UI whether AI replies are canned placeholders ("fake") or real."""
+    return {"status": "ok", "llm_mode": get_settings().LLM_MODE}

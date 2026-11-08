@@ -161,3 +161,9 @@ export interface AnalyticsOverviewOut {
 export interface RefreshOut {
   tables: Record<string, number>
 }
+
+// ---- GET /health ----
+export interface HealthOut {
+  status: string
+  llm_mode: 'fake' | 'real'
+}

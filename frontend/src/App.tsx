@@ -5,6 +5,7 @@ import LibraryPage from './pages/LibraryPage'
 import DocumentPage from './pages/DocumentPage'
 import PracticePage from './pages/PracticePage'
 import DashboardPage from './pages/DashboardPage'
+import DemoModeBanner from './components/DemoModeBanner'
 
 const { Sider, Content } = Layout
 
@@ -17,6 +18,8 @@ function selectedKey(pathname: string): string {
 export default function App() {
   const { pathname } = useLocation()
   return (
+    <>
+    <DemoModeBanner />
     <Layout style={{ minHeight: '100vh' }}>
       <Sider breakpoint="lg" collapsedWidth={0} theme="light" width={220}>
         <Typography.Title level={4} style={{ margin: 16 }}>
@@ -45,5 +48,6 @@ export default function App() {
         </Content>
       </Layout>
     </Layout>
+    </>
   )
 }

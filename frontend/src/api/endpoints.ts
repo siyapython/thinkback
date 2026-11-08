@@ -8,6 +8,7 @@ import type {
   ConceptOut,
   DocumentOut,
   ExtractionOut,
+  HealthOut,
   HintOut,
   IndependenceOut,
   QuestionOut,
@@ -19,6 +20,7 @@ import type {
 const data = <T>(p: Promise<{ data: T }>): Promise<T> => p.then((r) => r.data)
 
 export const api = {
+  getHealth: () => data<HealthOut>(http.get('/health')),
   listDocuments: () => data<DocumentOut[]>(http.get('/documents')),
   getDocument: (id: number) => data<DocumentOut>(http.get(`/documents/${id}`)),
   createTextDocument: (body: TextDocumentIn) => data<DocumentOut>(http.post('/documents', body)),
