@@ -179,3 +179,45 @@ A browser enforces the **same-origin policy**: JavaScript loaded from one *origi
 - Component state vs props, controlled inputs, and the effect dependency array.
 - Query keys and invalidation in TanStack Query.
 - Testing with React Testing Library: query by what the user sees (role, text), not by implementation details.
+
+## Milestone 7: the analytics pipeline
+
+### What is ETL / ELT?
+**ETL** means *Extract, Transform, Load*: pull data out of where it is produced (our app's tables), reshape it, and load it somewhere built for analysis. **ELT** flips the last two steps: load the raw data into the warehouse first, then transform it *inside* the database with SQL. We use ELT in its simplest form: the "warehouse" is the same Postgres, and the transform step is four SQL files that run `CREATE TABLE ... AS SELECT ...`. Why bother? The app's tables are shaped for *doing* things (save an answer, enforce a unique hint level), not for *asking* things (how did independence change week over week?). Analytical questions need joins and aggregates across many tables; doing that on every dashboard load is slow and repeats business rules in many places. A pipeline computes the answer once and stores it. Study: "ELT vs ETL", "OLTP vs OLAP".
+
+### What is the bronze / silver / gold pattern, and why?
+Three layers of increasingly refined data (also called the "medallion" architecture):
+- **Bronze**: raw data exactly as the app wrote it (our tables and the append-only `events_raw`). Never edited, so if a transform is wrong you can fix the code and rebuild.
+- **Silver**: cleaned and conformed. `silver.attempt_facts` has one row per attempt with the messy joins done and the business rules (`revealed`, `is_independent`) defined *once*.
+- **Gold**: aggregated for a specific use: daily progress, per-concept summary, funnel. These are what the dashboard reads.
+
+The payoff is that every number has one definition. If the gold tables each recomputed "independent", they could drift apart; because they all read `is_independent` from silver, they can't. It also makes debugging easy: a wrong chart number means checking gold against silver, then silver against bronze. Study: "medallion architecture", "single source of truth".
+
+### Full refresh vs incremental
+A **full refresh** drops the derived tables and recomputes them from all the raw data every run. It is simple and always correct (no stale rows, no "which rows changed?" logic), which is why we use it. An **incremental** load only processes new or changed rows and merges them in. It is much faster at scale but harder: you must track what was already processed, handle late or edited rows, and make reruns safe (idempotent). Rule of thumb: start with full refresh, switch to incremental when the run time hurts. Our runner does the whole rebuild inside **one transaction**, so the dashboard never sees half-built tables, and an error rolls everything back. Study: idempotency, "upsert / MERGE", transactional DDL in Postgres.
+
+### CTEs and window functions: what we used and why
+A **CTE** (`WITH name AS (...)`) is a named step inside a query, like a local variable for a table. Our SQL uses them to read top to bottom as a recipe (`answer_counts`, `final_answers`, `completed`, ...), each with a comment, instead of one unreadable nest of subqueries.
+A **window function** computes something across related rows *without collapsing them* like `GROUP BY` does. We used `ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...)` three times:
+1. in silver, to pick each attempt's *last graded answer* (number a attempt's answers newest-first, keep number 1);
+2. in `concept_summary`, to find a concept's *two most recent* attempts, for the "same misconception twice" gap rule;
+3. to pick the *most common* misconception per concept (rank by frequency, keep rank 1).
+`PARTITION BY` is "restart the counting for each group". The alternative is a self-join, which is slower and harder to read. Other useful details: `FILTER (WHERE ...)` for conditional counts, and `AT TIME ZONE 'UTC'` so "day" doesn't depend on the server's time zone. Study: window functions (`ROW_NUMBER`, `RANK`, `LAG`, running totals), CTEs.
+
+### Why data quality checks matter
+Pipelines fail *quietly*: a bad join doubles a row, a timezone slip moves a day, and the chart still draws, just with wrong numbers that someone then trusts. Checks turn silent errors into loud ones. Ours test things that must always be true (no attempt finishes before it starts, rates are between 0 and 1, silver has exactly as many rows as `attempts`, gold totals reconcile with silver, failed extractions stay out of the funnel). The most important test is the one that feeds the checks *bad data on purpose* and asserts they catch it. A check that has never been seen to fail may be checking nothing. Study: "data contracts", "reconciliation checks", Great Expectations / dbt tests.
+
+### Why the demo data is separate (and labelled)
+A dashboard of one user with four attempts shows nothing. `pipeline/seed_demo.py` inserts a synthetic learner with 4 weeks of generated history so the charts have a story. It is deterministic (fixed random seed) so the screenshots and tests are repeatable, and it is **never** presented as real usage. We found the synthetic user by a marker document, not by its name, because the real demo user is also called "Demo Learner" and a name match would have pointed `--reset` at real data. Study: test fixtures vs seed data, why you identify records by something you control rather than a display name.
+
+### Known limitations
+- Full refresh will not scale to large data; it needs an incremental design.
+- "Day" is a UTC day, not the learner's local day.
+- The demo data is synthetic and must be labelled as such.
+- Nothing orchestrates the pipeline: no schedule, retries or alerts, and quality checks are tests, not gates.
+- The funnel's "completed" stage misses manual completions (that endpoint logs no event).
+
+### What to study
+- Medallion architecture, star schemas, and the difference between facts and dimensions (`attempt_facts` is a fact table).
+- SQL window functions and CTEs, and reading `EXPLAIN` output.
+- Idempotent jobs, transactions, and how orchestrators (Airflow, Dagster, cron) schedule pipelines.
