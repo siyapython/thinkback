@@ -71,6 +71,19 @@ An append-only log of things that happened. The bronze layer of the analytics pi
 - `payload JSONB` (default `{}`) holds event-specific details; `schema_version` lets payload shape evolve; `occurred_at` defaults to `now()`.
 - Indexes: `(user_id, occurred_at)` for per-learner timelines, `(event_type, occurred_at)` for per-event-type scans.
 
+## JSON shapes stored by the practice loop
+No columns changed in this milestone; these are the shapes we put in the existing JSONB columns.
+- `questions.rubric`: a JSON array of 3-5 key-point strings. **Backend-only**, never returned to the student (except by the deliberate "reveal" endpoint).
+- `questions.misconceptions`: a JSON array of short strings, or NULL. **Backend-only.**
+- `answers.points_covered` / `answers.points_missed`: arrays of strings (the grader's wording). **Backend-only**; the API returns only counts.
+- `answers.feedback`: the Socratic feedback the student actually saw (if the grader's text revealed a missed point, the stored text is the generic replacement).
+- `hint_requests.leak_check_passed`: true when the hint text came from the model and passed the leak check. False means the model's output never passed (even after one regeneration) and a generic fallback hint was stored instead (`model = 'static-fallback'`).
+- `hint_requests.regenerated`: true when a second, stricter generation was attempted.
+- `hint_requests.cited_chunk_ids`: the concept's source chunks.
+- `attempts.effective_score`: `best rubric_score * hint_factor` (0 if revealed), set when the attempt completes. `max_hint_level` is the highest hint level requested.
+- `concept_mastery.mastery`: exponential moving average of `effective_score` (see LEARNING.md). `last_misconception` is overwritten only when a completed attempt has one.
+- "Same misconception twice in a row" is computed from the two most recent completed attempts' last graded answers, not from `last_misconception` alone, so a clean attempt in between breaks the streak.
+
 ## Foreign key summary
 | child | parent | on delete |
 |---|---|---|
