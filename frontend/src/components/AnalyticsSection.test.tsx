@@ -31,8 +31,8 @@ const overview = (patch: Partial<AnalyticsOverviewOut> = {}): AnalyticsOverviewO
     { day: '2026-03-03', attempts_completed: 1, independence_rate: 1, avg_hint_level: 0.5, reveal_rate: 0, avg_effective_score: 0.9 },
   ],
   concept_summary: [
-    { concept_id: 1, concept_name: 'Joins', document_id: 1, attempts: 2, avg_effective_score: 0.9, avg_max_hint_level: 0, reveal_count: 0, mastery: 0.9, is_gap: false, top_misconception: null },
-    { concept_id: 2, concept_name: 'Windows', document_id: 1, attempts: 2, avg_effective_score: 0.3, avg_max_hint_level: 3, reveal_count: 1, mastery: 0.3, is_gap: true, top_misconception: 'x' },
+    { concept_id: 1, concept_name: 'Joins', document_id: 1, attempts: 2, avg_effective_score: 0.9, avg_max_hint_level: 0, reveal_count: 0, mastery: 0.9, is_gap: false },
+    { concept_id: 2, concept_name: 'Windows', document_id: 1, attempts: 2, avg_effective_score: 0.3, avg_max_hint_level: 3, reveal_count: 1, mastery: 0.3, is_gap: true },
   ],
   funnel: [{ document_id: 1, document_title: 'SQL', concepts_extracted: 1, question_served: 8, answer_submitted: 5, completed: 4, revealed: 1 }],
   ...patch,

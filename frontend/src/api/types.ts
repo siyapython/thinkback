@@ -124,7 +124,6 @@ export interface ConceptSummaryOut {
   reveal_count: number
   mastery: number | null
   is_gap: boolean
-  top_misconception: string | null
 }
 
 export interface FunnelOut {

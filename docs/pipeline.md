@@ -40,7 +40,7 @@ flowchart LR
 | bronze | `public.*` incl. `events_raw` | whatever the app writes | the app | source of truth; never modified by the pipeline |
 | silver | `silver.attempt_facts` | attempt | attempts, answers, hint_requests, questions, concepts | one clean row per attempt with shared definitions (`revealed`, `is_independent`) |
 | gold | `gold.learner_daily` | user × UTC day | silver | progress-over-time chart |
-| gold | `gold.concept_summary` | user × concept | silver, concept_mastery, concepts | per-concept strength, gap flag, top misconception |
+| gold | `gold.concept_summary` | user × concept | silver, concept_mastery, concepts | per-concept strength, gap flag, top misconception (kept in the warehouse only; the API does not return it) |
 | gold | `gold.funnel` | user × document | events_raw, documents | served → submitted → completed → revealed counts |
 
 ## How to run

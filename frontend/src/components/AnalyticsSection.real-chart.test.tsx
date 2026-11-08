@@ -16,7 +16,7 @@ const overview: AnalyticsOverviewOut = {
     { day: '2026-03-02', attempts_completed: 2, independence_rate: 0.5, avg_hint_level: 2, reveal_rate: 0, avg_effective_score: 0.4 },
   ],
   concept_summary: [
-    { concept_id: 1, concept_name: 'Joins', document_id: 1, attempts: 2, avg_effective_score: 0.9, avg_max_hint_level: 0, reveal_count: 0, mastery: 0.9, is_gap: false, top_misconception: null },
+    { concept_id: 1, concept_name: 'Joins', document_id: 1, attempts: 2, avg_effective_score: 0.9, avg_max_hint_level: 0, reveal_count: 0, mastery: 0.9, is_gap: false },
   ],
   funnel: [{ document_id: 1, document_title: 'SQL', concepts_extracted: 1, question_served: 8, answer_submitted: 5, completed: 4, revealed: 1 }],
 }
