@@ -18,13 +18,13 @@ An AI learning partner for SQL practice. It gives escalating Socratic hints
 - docs/      architecture notes and decision records
 
 ## How to work in this repo
-- I am a student learning full-stack development. Explain non-obvious decisions briefly.
-- Make one small change per request. Do not build multiple features at once.
-- Write tests alongside code.
+- I'm a student under a deadline. Build features end to end, but after each
+  feature write a short plain-English explanation into docs/LEARNING.md
+  (what it does, why it's designed this way, what to study).
+- Commit after each working feature with a conventional commit message,
+  on a feature branch, and push it.
 - Never commit secrets. Real keys live in .env, which is gitignored.
-- I am writing the hint-engine system prompt, the SQL transforms, and the
-  metric definitions myself. Review those for me, but do not rewrite them.
-- When I'm debugging, prefer guiding questions over handing me the fix.
+- Write tests alongside code and run them before committing.
 
 ## Conventions
 - Conventional commits: feat:, fix:, test:, docs:, chore:
