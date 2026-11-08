@@ -1,5 +1,5 @@
 import { ReloadOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Col, Row, Select, Space, Statistic, Typography } from 'antd'
+import { Alert, Button, Card, Col, Row, Select, Space, Statistic, Tag, Typography } from 'antd'
 import { useState } from 'react'
 import { errorMessage } from '../api/client'
 import { useAnalyticsOverview, useAnalyticsUsers, useRefreshAnalytics } from '../hooks/useAnalytics'
@@ -32,7 +32,15 @@ export default function AnalyticsSection() {
             value={userId}
             onChange={setSelected}
             loading={users.isLoading}
-            options={(users.data ?? []).map((u) => ({ value: u.id, label: u.display_name }))}
+            options={(users.data ?? []).map((u) => ({
+              value: u.id,
+              label: (
+                <Space size={6}>
+                  <span>{u.display_name}</span>
+                  {u.is_synthetic && <Tag color="orange" style={{ marginInlineEnd: 0 }}>synthetic data</Tag>}
+                </Space>
+              ),
+            }))}
           />
           <Button icon={<ReloadOutlined />} loading={refresh.isPending} onClick={() => refresh.mutate()}>
             Refresh analytics

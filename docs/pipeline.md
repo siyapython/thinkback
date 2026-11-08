@@ -49,7 +49,7 @@ From the repo root (Postgres up via `docker compose up -d db`, migrations applie
 
 ```bash
 backend/.venv/bin/python -m pipeline.run                 # rebuild silver + gold, prints row counts
-backend/.venv/bin/python -m pipeline.seed_demo           # optional: synthetic "Demo Learner (synthetic)"
+backend/.venv/bin/python -m pipeline.seed_demo           # optional: synthetic "Demo Learner (synthetic)" (the real account is called "You")
 backend/.venv/bin/python -m pipeline.seed_demo --reset   # delete only that user's data, re-create it
 backend/.venv/bin/python -m pipeline.quality             # run the data quality checks on the live DB
 backend/.venv/bin/pytest pipeline                        # pipeline tests (rolled-back transactions)

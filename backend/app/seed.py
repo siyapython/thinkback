@@ -5,7 +5,8 @@ from sqlalchemy import select
 from app.db import SessionLocal
 from app.models import User
 
-DEMO_NAME = "Demo Learner"
+# The real account. Synthetic learners are labelled "synthetic data" in the dashboard instead.
+DEMO_NAME = "You"
 
 
 def seed() -> int:
