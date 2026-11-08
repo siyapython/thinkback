@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -180,3 +180,67 @@ class GradeResult(BaseModel):
         if v is None or v.strip().lower() in {"", "null", "none", "n/a"}:
             return None
         return v.strip()
+
+
+# ---- Analytics (read from the pipeline's silver/gold tables) ----
+class LearnerDayOut(BaseModel):
+    day: date
+    attempts_completed: int
+    independence_rate: float
+    avg_hint_level: float
+    reveal_rate: float
+    avg_effective_score: float | None
+
+
+class ConceptSummaryOut(BaseModel):
+    concept_id: int
+    concept_name: str
+    document_id: int
+    attempts: int
+    avg_effective_score: float | None
+    avg_max_hint_level: float | None
+    reveal_count: int
+    mastery: float | None
+    is_gap: bool
+    top_misconception: str | None
+
+
+class FunnelOut(BaseModel):
+    document_id: int
+    document_title: str | None
+    concepts_extracted: int
+    question_served: int
+    answer_submitted: int
+    completed: int
+    revealed: int
+
+
+class HeadlineOut(BaseModel):
+    completed_attempts: int
+    independent_attempts: int
+    independence_rate: float | None
+    avg_hint_level: float | None
+    reveal_rate: float | None
+    avg_effective_score: float | None
+    gap_concepts: int
+
+
+class AnalyticsOverviewOut(BaseModel):
+    user_id: int
+    display_name: str
+    is_synthetic: bool
+    pipeline_ready: bool  # False until `python -m pipeline.run` / POST /analytics/refresh ran
+    headline: HeadlineOut
+    learner_daily: list[LearnerDayOut]
+    concept_summary: list[ConceptSummaryOut]
+    funnel: list[FunnelOut]
+
+
+class AnalyticsUserOut(BaseModel):
+    id: int
+    display_name: str
+    is_synthetic: bool
+
+
+class RefreshOut(BaseModel):
+    tables: dict[str, int]
