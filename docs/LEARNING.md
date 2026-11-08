@@ -179,3 +179,11 @@ A browser enforces the **same-origin policy**: JavaScript loaded from one *origi
 - Component state vs props, controlled inputs, and the effect dependency array.
 - Query keys and invalidation in TanStack Query.
 - Testing with React Testing Library: query by what the user sees (role, text), not by implementation details.
+
+## LLM mode banner
+
+**What it does.** `GET /health` now returns `{"status": "ok", "llm_mode": "fake" | "real"}`. The frontend asks for it once and, when the mode is `fake`, shows a yellow antd `Alert` banner: "Demo mode: AI responses are placeholders. Set LLM_MODE=real in .env to use Claude." In `real` mode (or while the request is loading or failing) nothing is shown.
+
+**Why it's designed this way.** Fake mode returns canned hints and grades, so a learner could mistake placeholders for real tutoring. The *server* is the source of truth for the mode because only it reads `.env`; the browser can't know. Exposing only the word `fake`/`real` leaks nothing: never return the API key or any other setting. The banner hides until the answer arrives, so real-mode users never see a flash of the warning.
+
+**What to study.** Health/readiness endpoints, TanStack Query `staleTime`, mocking an API function with `vi.spyOn` in Vitest, and monkeypatching a cached settings object in pytest.

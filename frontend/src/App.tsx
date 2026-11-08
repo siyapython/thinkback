@@ -1,6 +1,7 @@
 import { Layout, Menu, Typography } from 'antd'
 import { BarChartOutlined, BookOutlined, EditOutlined } from '@ant-design/icons'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import LlmModeBanner from './components/LlmModeBanner'
 import LibraryPage from './pages/LibraryPage'
 import DocumentPage from './pages/DocumentPage'
 import PracticePage from './pages/PracticePage'
@@ -33,6 +34,7 @@ export default function App() {
         />
       </Sider>
       <Layout>
+        <LlmModeBanner />
         <Content style={{ padding: 24, maxWidth: 1100, width: '100%' }}>
           <Routes>
             <Route path="/" element={<LibraryPage />} />

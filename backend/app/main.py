@@ -23,4 +23,4 @@ app.include_router(practice.router)
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "llm_mode": settings.LLM_MODE}
