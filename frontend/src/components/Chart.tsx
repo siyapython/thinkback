@@ -1,11 +1,11 @@
-import { BarChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent } from 'echarts/components'
+import { BarChart, FunnelChart, LineChart } from 'echarts/charts'
+import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
 import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsCoreOption } from 'echarts/core'
 import ReactEChartsCore from 'echarts-for-react/lib/core'
 
-echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer])
+echarts.use([BarChart, LineChart, FunnelChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer])
 
 interface Props {
   option: EChartsCoreOption
