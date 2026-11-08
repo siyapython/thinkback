@@ -78,7 +78,7 @@ function PracticeSession({ conceptId, documentId, queue, onNext }: SessionProps)
   const inlineError = [submit, hint, reveal, complete].find((m) => m.isError)
 
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
       <Card>
         <Tag>{question.question_type}</Tag>
         {queue.length > 0 && <Tag color="blue">{queue.length} more queued</Tag>}
@@ -191,7 +191,7 @@ export default function PracticePage() {
   }
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }}>
+    <Space orientation="vertical" style={{ width: '100%' }}>
       <Typography.Title level={2} style={{ margin: 0 }}>
         Practice
       </Typography.Title>

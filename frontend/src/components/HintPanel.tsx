@@ -14,7 +14,7 @@ interface Props {
 export default function HintPanel({ hints, level, loading, disabled, error, onRequest }: Props) {
   const exhausted = level >= MAX_HINT_LEVEL
   return (
-    <Space direction="vertical" style={{ width: '100%' }}>
+    <Space orientation="vertical" style={{ width: '100%' }}>
       <Space>
         <Button icon={<BulbOutlined />} onClick={onRequest} loading={loading} disabled={disabled || exhausted}>
           I&apos;m stuck

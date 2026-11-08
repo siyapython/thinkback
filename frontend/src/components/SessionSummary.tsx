@@ -14,7 +14,7 @@ interface Props {
 export default function SessionSummary({ attempt, bestScore, mastery, explanation, onNext, onBack }: Props) {
   return (
     <Card title="Attempt complete">
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+      <Space orientation="vertical" style={{ width: '100%' }} size="middle">
         {explanation && <Typography.Paragraph style={{ whiteSpace: 'pre-line' }}>{explanation}</Typography.Paragraph>}
         <Descriptions column={1} bordered size="small">
           <Descriptions.Item label="Score">{pct(bestScore)}%</Descriptions.Item>
