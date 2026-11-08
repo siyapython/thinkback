@@ -38,6 +38,20 @@ def _now() -> datetime:
 
 
 def start_attempt(session: Session, question: Question, user_id: int) -> Attempt:
+    already_revealed = session.scalar(
+        select(Attempt.id)
+        .where(
+            Attempt.user_id == user_id,
+            Attempt.question_id == question.id,
+            Attempt.revealed_at.is_not(None),
+        )
+        .limit(1)
+    )
+    if already_revealed is not None:
+        # The reveal showed the rubric; re-answering this question would just be copying it.
+        raise HTTPException(
+            409, "You have already seen the answer to this question. Ask for a new question."
+        )
     attempt = Attempt(user_id=user_id, question_id=question.id)
     session.add(attempt)
     session.flush()
@@ -157,10 +171,12 @@ def submit_answer(
             502, f"Grading failed: {exc}. Your answer was saved; try again."
         ) from exc
 
-    # The student must not see missed key points: check the feedback and replace it if it leaks.
+    # The student must not see missed key points or hidden misconceptions: check the feedback
+    # and replace it if it leaks.
     covered_norm = {p.strip().casefold() for p in grade.points_covered}
     uncovered = [p for p in rubric if p.strip().casefold() not in covered_norm]
-    check_against = list(grade.points_missed) + uncovered
+    # The hidden misconception list is just as confidential as the rubric.
+    check_against = list(grade.points_missed) + uncovered + list(question.misconceptions or [])
     replaced = check_leak(grade.feedback, check_against, exclude=question.prompt).leaked
     feedback = GENERIC_FEEDBACK if replaced else grade.feedback
 

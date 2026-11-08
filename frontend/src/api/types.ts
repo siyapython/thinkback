@@ -124,7 +124,6 @@ export interface ConceptSummaryOut {
   reveal_count: number
   mastery: number | null
   is_gap: boolean
-  top_misconception: string | null
 }
 
 export interface FunnelOut {
@@ -160,4 +159,10 @@ export interface AnalyticsOverviewOut {
 
 export interface RefreshOut {
   tables: Record<string, number>
+}
+
+// ---- GET /health ----
+export interface HealthOut {
+  status: string
+  llm_mode: 'fake' | 'real'
 }

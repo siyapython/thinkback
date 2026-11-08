@@ -105,7 +105,7 @@ def overview(session: Session, user: User) -> dict:
     concepts = _rows(
         session,
         """SELECT concept_id, concept_name, document_id, attempts, avg_effective_score,
-                  avg_max_hint_level, reveal_count, mastery, is_gap, top_misconception
+                  avg_max_hint_level, reveal_count, mastery, is_gap
            FROM gold.concept_summary WHERE user_id = :u ORDER BY concept_name""",
         user.id,
     )

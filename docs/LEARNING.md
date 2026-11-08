@@ -238,3 +238,24 @@ The Dashboard rendered a white screen with `Element type is invalid ... got: obj
 - CommonJS vs ES modules, `__esModule`, and "default import interop" (why `import x from` differs between tools).
 - Why tests can pass while the real app fails: test environment vs real runtime.
 - React error boundaries (class components with `getDerivedStateFromError`; they only catch render errors, not event handlers or async code).
+
+## Milestone 8: README, CI, polish and an audit
+
+### What got built
+A README for a reader with 60 seconds; a GitHub Actions workflow (backend, pipeline and frontend jobs, no secrets); a "Demo mode" banner driven by `GET /health` (which now reports `llm_mode`); the real account renamed to "You" through a migration, with synthetic learners tagged "synthetic data" in the selector; and a security/consistency audit (`docs/AUDIT.md`) that found and fixed three leaks.
+
+### What is CI, and why does it matter?
+*Continuous integration* means a robot runs your checks (lint, tests, build) on a clean machine every time you push. "It works on my laptop" often hides assumptions: a database that already has data in it, a global tool you installed once, a `.env` file. CI starts from nothing, so it exposes those. Ours starts a fresh Postgres 16, installs dependencies, runs migrations (which also proves the migration chain works from zero) and runs the tests with `LLM_MODE=fake`, so it needs no API key and costs nothing. Dependencies are cached to make runs faster, and actions are pinned to a major version (`@v4`) so a surprise breaking release doesn't silently change the build. Study: GitHub Actions workflow syntax, service containers, why secrets must never be needed by tests.
+
+### Why a banner for fake mode?
+In fake mode every AI reply is a canned placeholder. That's great for development and demos, but someone looking at the app could mistake "Concept 1" and canned hints for real output. A visible banner makes the mode impossible to miss. The frontend learns the mode from the backend (`/health`) rather than guessing, because the mode is a backend setting.
+
+### Why rename through a migration?
+Editing the database by hand changes only your copy; the next person (or CI, or you on a new laptop) gets the old name. A migration is code in git, so every database ends up the same. Migration `0002` only renames the exact old name `Demo Learner`, so it can never touch the synthetic user, and it has a `downgrade` to reverse it. The seed script uses the new name so fresh databases match.
+
+### What the audit found (and what an audit is)
+An audit means checking the app against its own promises instead of trusting that it keeps them. The promise "the student never sees the rubric or the misconceptions" had three holes: grader feedback wasn't checked against misconceptions; the dashboard API returned the grader's diagnosed misconception (often a verbatim hidden entry); and after a "reveal" you could start a new attempt on the same question and paste the revealed answer back for full marks. Each fix has a regression test. The lesson: a guarantee needs tests that *try to break it*, including through side doors like analytics endpoints. `docs/AUDIT.md` also lists what was *not* verified, which matters as much as what was.
+
+### What to study
+Continuous integration, database migrations (and why `downgrade` exists), the principle of least privilege / data minimisation (don't return fields nobody uses), threat modelling for LLM apps (prompt injection, data exfiltration through side channels), and why "tests pass" and "it is secure" are different claims.
+

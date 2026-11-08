@@ -25,14 +25,14 @@ const headline = {
   avg_hint_level: 1.3, reveal_rate: 0.333, avg_effective_score: 0.5, gap_concepts: 1,
 }
 const overview = (patch: Partial<AnalyticsOverviewOut> = {}): AnalyticsOverviewOut => ({
-  user_id: 1, display_name: 'Demo Learner', is_synthetic: false, pipeline_ready: true, headline,
+  user_id: 1, display_name: 'You', is_synthetic: false, pipeline_ready: true, headline,
   learner_daily: [
     { day: '2026-03-02', attempts_completed: 2, independence_rate: 0.5, avg_hint_level: 2, reveal_rate: 0, avg_effective_score: 0.4 },
     { day: '2026-03-03', attempts_completed: 1, independence_rate: 1, avg_hint_level: 0.5, reveal_rate: 0, avg_effective_score: 0.9 },
   ],
   concept_summary: [
-    { concept_id: 1, concept_name: 'Joins', document_id: 1, attempts: 2, avg_effective_score: 0.9, avg_max_hint_level: 0, reveal_count: 0, mastery: 0.9, is_gap: false, top_misconception: null },
-    { concept_id: 2, concept_name: 'Windows', document_id: 1, attempts: 2, avg_effective_score: 0.3, avg_max_hint_level: 3, reveal_count: 1, mastery: 0.3, is_gap: true, top_misconception: 'x' },
+    { concept_id: 1, concept_name: 'Joins', document_id: 1, attempts: 2, avg_effective_score: 0.9, avg_max_hint_level: 0, reveal_count: 0, mastery: 0.9, is_gap: false },
+    { concept_id: 2, concept_name: 'Windows', document_id: 1, attempts: 2, avg_effective_score: 0.3, avg_max_hint_level: 3, reveal_count: 1, mastery: 0.3, is_gap: true },
   ],
   funnel: [{ document_id: 1, document_title: 'SQL', concepts_extracted: 1, question_served: 8, answer_submitted: 5, completed: 4, revealed: 1 }],
   ...patch,
@@ -43,7 +43,7 @@ describe('AnalyticsSection', () => {
     vi.restoreAllMocks()
     charts.length = 0
     vi.spyOn(api, 'getAnalyticsUsers').mockResolvedValue([
-      { id: 1, display_name: 'Demo Learner', is_synthetic: false },
+      { id: 1, display_name: 'You', is_synthetic: false },
       { id: 2, display_name: 'Demo Learner (synthetic)', is_synthetic: true },
     ])
   })
@@ -84,6 +84,8 @@ describe('AnalyticsSection', () => {
     await waitFor(() => expect(spy).toHaveBeenCalledWith(1))
     spy.mockResolvedValue(overview({ user_id: 2, is_synthetic: true }))
     await userEvent.click(screen.getByRole('combobox', { name: /learner/i }))
+    // synthetic users carry a visible tag in the list; the real account does not
+    expect(await screen.findAllByText('synthetic data')).toHaveLength(1)
     await userEvent.click(await screen.findByText('Demo Learner (synthetic)'))
     await waitFor(() => expect(spy).toHaveBeenCalledWith(2))
     expect(await screen.findByText(/synthetic demo data/i)).toBeInTheDocument()

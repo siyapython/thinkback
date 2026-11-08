@@ -202,7 +202,8 @@ class ConceptSummaryOut(BaseModel):
     reveal_count: int
     mastery: float | None
     is_gap: bool
-    top_misconception: str | None
+    # No top_misconception here on purpose: grader-diagnosed misconceptions can be verbatim
+    # entries of the hidden per-question list, which must never reach the student.
 
 
 class FunnelOut(BaseModel):
