@@ -221,3 +221,20 @@ A dashboard of one user with four attempts shows nothing. `pipeline/seed_demo.py
 - Medallion architecture, star schemas, and the difference between facts and dimensions (`attempt_facts` is a fact table).
 - SQL window functions and CTEs, and reading `EXPLAIN` output.
 - Idempotent jobs, transactions, and how orchestrators (Airflow, Dagster, cron) schedule pipelines.
+
+## Bugfix: the blank Dashboard (chart import interop)
+
+### What happened
+The Dashboard rendered a white screen with `Element type is invalid ... got: object` while Library and Practice worked (they never load a chart). `echarts-for-react/lib/core` is an old-style **CommonJS** file that ends with `exports.default = Component`. Vite's dev server pre-bundles such files, and the default import we got was the *whole exports object* (`{ default: Component }`), not the component. React was handed an object as an element type and threw. Vitest loads the file a different way and got the real component, so every test passed while the browser broke.
+
+### What we changed and why
+- `src/lib/interop.ts` has `unwrapDefault`, which keeps reading `.default` until it reaches the real value. `Chart.tsx` uses it, so one import works in Vite dev, `vite build`, and Vitest.
+- A test that mocks the library in the broken shape (`Chart.dev-interop.test.tsx`) fails without the fix, because the normal tests cannot see this bug.
+- `SectionBoundary` is a React **error boundary**: if something inside throws while rendering, only that section shows "could not be displayed" with a Try again button. Each dashboard section has one, so one broken chart cannot blank the page.
+- The test setup gives jsdom a no-op canvas, so real ECharts can run in tests.
+- antd renamed `<Space direction>` to `orientation`; we updated every use.
+
+### What to study
+- CommonJS vs ES modules, `__esModule`, and "default import interop" (why `import x from` differs between tools).
+- Why tests can pass while the real app fails: test environment vs real runtime.
+- React error boundaries (class components with `getDerivedStateFromError`; they only catch render errors, not event handlers or async code).
