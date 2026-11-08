@@ -154,3 +154,28 @@ Prompt injection is when text that is supposed to be *data* (a student's answer,
 - Guardrails and defence in depth; word-overlap similarity (set intersection over a token set).
 - Exponential moving averages (the same idea powers many dashboards and "smoothing" features).
 - FastAPI response models as a security boundary (`response_model` + separate student/internal models).
+
+## Milestone 6: the React frontend
+
+### What is a React component, and what is a hook?
+A **component** is a function that takes inputs (called *props*) and returns a description of some UI. `ConceptRow` takes a concept and its mastery and returns a row with a name, a progress bar and maybe a red "Gap" tag. You build a page by nesting small components, the way you build a program from small functions. React calls your function again whenever its inputs or state change and updates only the parts of the screen that differ. A **hook** is a special function (its name starts with `use`) that lets a component "hook into" React features: `useState` remembers a value between renders (the text in the answer box), `useEffect` runs code after rendering (start the practice session when the page opens), and `useNavigate` gives you a way to change page. Hooks can only be called at the top level of a component or another hook, never inside `if` or loops, because React identifies them by call order. Our own hooks (`useDocuments`, `useMastery`, `usePractice`) are just functions that bundle other hooks so pages stay short. Study: "Thinking in React", the Rules of Hooks, and why state is immutable (we always make a new array with `[...hints, newHint]`).
+
+### What problem does TanStack Query solve?
+Data from a server is not like local state: it is slow, it can fail, it can be out of date, and several components may need the same data. Without a library you hand-write `isLoading`, `error` and `data` state plus a `useEffect` for every request, and you easily get bugs (two requests racing, stale data after an update, fetching the same list five times). TanStack Query gives each request a **query key** (like `['mastery', 12]`) and handles loading/error state, caching (the Library and Dashboard share the documents list), and **invalidation**: after you finish an attempt we mark `['mastery']` stale and every screen showing mastery refetches itself. Reads are `useQuery`; writes (POST) are `useMutation`. Study: "server state vs client state", cache invalidation, and why `retry` is off here (a failed AI call should show an error, not silently re-bill you).
+
+### Why the frontend never sees the rubric
+The rubric (what a good answer must contain) is the answer key. Anything the browser receives, the student can read in the Network tab, so "we just don't display it" is not protection. The only safe rule is that the server never sends it. The backend enforces this with separate student-facing models: `QuestionOut` has only `id`, `concept_id`, `question_type` and `prompt`; grading returns counts of covered points (`points_covered_count` of `points_total`) but never their text; the hint endpoint returns the hint, not the rubric it was based on. Our TypeScript types in `src/api/types.ts` mirror those models exactly, so there is no field to render even by accident. Note that TypeScript types are only a convenience for us; the real boundary is the server. The "Show answer" button is the one intended exception, and it is a deliberate, confirmed action that ends the attempt and zeroes its effective score. Study: trust boundaries ("never trust the client"), and why the server must be the one that decides what to reveal.
+
+### How CORS applies to this app
+A browser enforces the **same-origin policy**: JavaScript loaded from one *origin* (scheme + host + port) may not read responses from a different origin unless that server opts in. Our React app runs at `http://localhost:5173` and calls the API at `http://localhost:8000`: different ports, so different origins. **CORS** (Cross-Origin Resource Sharing) is how the API opts in. The backend's `CORSMiddleware` replies with `Access-Control-Allow-Origin: http://localhost:5173` (from the `CORS_ORIGINS` setting). For requests that are not "simple" (JSON bodies, custom headers), the browser first sends a **preflight** `OPTIONS` request asking "may I?", and the middleware answers it. Important points: CORS is enforced by the *browser*, not the server, so it protects users' browsers rather than the API itself (curl ignores it); and the server still needs real authentication, which this demo-user app doesn't have yet. If you deploy the frontend somewhere else, add its origin to `CORS_ORIGINS` or every request will fail with a CORS error in the console even though the API is up. Study: MDN "CORS", same-origin policy, preflight requests.
+
+### Design choices worth knowing
+- Mastery and concepts come from two endpoints, so the document page joins them by concept id on the client.
+- The practice URL carries context: `/practice/:conceptId?doc=ID&queue=3,5`. `doc` lets the summary load the updated mastery and link back; `queue` is what "Work on weak spots" uses to chain the three weakest concepts.
+- Hints are kept in the page's state because the API has no "list my hints" endpoint, so a page reload restarts the session with a new question.
+- ECharts is registered piece by piece (bar chart, grid, tooltip, canvas) instead of importing everything, to keep the bundle smaller.
+
+### What to study
+- Component state vs props, controlled inputs, and the effect dependency array.
+- Query keys and invalidation in TanStack Query.
+- Testing with React Testing Library: query by what the user sees (role, text), not by implementation details.
