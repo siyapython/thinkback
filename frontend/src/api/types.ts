@@ -97,3 +97,8 @@ export interface IndependenceOut {
 }
 
 export const MAX_HINT_LEVEL = 4
+
+export interface HealthOut {
+  status: string
+  llm_mode: 'fake' | 'real'
+}

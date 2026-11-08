@@ -6,6 +6,7 @@ import type {
   ConceptOut,
   DocumentOut,
   ExtractionOut,
+  HealthOut,
   HintOut,
   IndependenceOut,
   QuestionOut,
@@ -38,5 +39,6 @@ export const api = {
   reveal: (attemptId: number) => data<RevealOut>(http.post(`/attempts/${attemptId}/reveal`)),
   complete: (attemptId: number) => data<AttemptOut>(http.post(`/attempts/${attemptId}/complete`)),
 
+  getHealth: () => data<HealthOut>(http.get('/health')),
   getIndependence: () => data<IndependenceOut>(http.get('/metrics/independence')),
 }
