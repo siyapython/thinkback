@@ -199,7 +199,7 @@ A **full refresh** drops the derived tables and recomputes them from all the raw
 ### CTEs and window functions: what we used and why
 A **CTE** (`WITH name AS (...)`) is a named step inside a query, like a local variable for a table. Our SQL uses them to read top to bottom as a recipe (`answer_counts`, `final_answers`, `completed`, ...), each with a comment, instead of one unreadable nest of subqueries.
 A **window function** computes something across related rows *without collapsing them* like `GROUP BY` does. We used `ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...)` three times:
-1. in silver, to pick each attempt's *last graded answer* (number a attempt's answers newest-first, keep number 1);
+1. in silver, to pick each attempt's *last graded answer* (number an attempt's answers newest-first, keep number 1);
 2. in `concept_summary`, to find a concept's *two most recent* attempts, for the "same misconception twice" gap rule;
 3. to pick the *most common* misconception per concept (rank by frequency, keep rank 1).
 `PARTITION BY` is "restart the counting for each group". The alternative is a self-join, which is slower and harder to read. Other useful details: `FILTER (WHERE ...)` for conditional counts, and `AT TIME ZONE 'UTC'` so "day" doesn't depend on the server's time zone. Study: window functions (`ROW_NUMBER`, `RANK`, `LAG`, running totals), CTEs.
