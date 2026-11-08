@@ -38,6 +38,20 @@ def _now() -> datetime:
 
 
 def start_attempt(session: Session, question: Question, user_id: int) -> Attempt:
+    already_revealed = session.scalar(
+        select(Attempt.id)
+        .where(
+            Attempt.user_id == user_id,
+            Attempt.question_id == question.id,
+            Attempt.revealed_at.is_not(None),
+        )
+        .limit(1)
+    )
+    if already_revealed is not None:
+        # The reveal showed the rubric; re-answering this question would just be copying it.
+        raise HTTPException(
+            409, "You have already seen the answer to this question. Ask for a new question."
+        )
     attempt = Attempt(user_id=user_id, question_id=question.id)
     session.add(attempt)
     session.flush()

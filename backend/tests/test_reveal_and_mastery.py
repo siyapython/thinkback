@@ -211,7 +211,8 @@ def test_independence_metric(client, llm):
     client.post(f"/attempts/{c}/complete")
     d = attempt()  # revealed with no hints -> not independent
     client.post(f"/attempts/{d}/reveal")
-    attempt()  # still in progress: not counted
+    # still in progress: not counted (a revealed question is closed, so use a fresh one)
+    start_attempt(client, make_question(client, cid)["id"])
 
     assert client.get("/metrics/independence").json() == {
         "completed_attempts": 4,
