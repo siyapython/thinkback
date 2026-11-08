@@ -2,6 +2,7 @@ import { Alert, Card, Col, Row, Select, Space, Statistic, Typography } from 'ant
 import { useQueries } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api } from '../api/endpoints'
+import AnalyticsSection from '../components/AnalyticsSection'
 import Chart from '../components/Chart'
 import QueryState from '../components/QueryState'
 import { useDocuments } from '../hooks/useDocuments'
@@ -96,6 +97,7 @@ export default function DashboardPage() {
           )}
         </QueryState>
       </Card>
+      <AnalyticsSection />
     </Space>
   )
 }

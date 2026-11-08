@@ -1,5 +1,7 @@
 import { http } from './client'
 import type {
+  AnalyticsOverviewOut,
+  AnalyticsUserOut,
   AnswerOut,
   AttemptOut,
   ConceptMasteryOut,
@@ -9,6 +11,7 @@ import type {
   HintOut,
   IndependenceOut,
   QuestionOut,
+  RefreshOut,
   RevealOut,
   TextDocumentIn,
 } from './types'
@@ -39,4 +42,9 @@ export const api = {
   complete: (attemptId: number) => data<AttemptOut>(http.post(`/attempts/${attemptId}/complete`)),
 
   getIndependence: () => data<IndependenceOut>(http.get('/metrics/independence')),
+
+  getAnalyticsUsers: () => data<AnalyticsUserOut[]>(http.get('/analytics/users')),
+  getAnalyticsOverview: (userId: number) =>
+    data<AnalyticsOverviewOut>(http.get('/analytics/overview', { params: { user_id: userId } })),
+  refreshAnalytics: () => data<RefreshOut>(http.post('/analytics/refresh')),
 }
