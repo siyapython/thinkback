@@ -157,10 +157,12 @@ def submit_answer(
             502, f"Grading failed: {exc}. Your answer was saved; try again."
         ) from exc
 
-    # The student must not see missed key points: check the feedback and replace it if it leaks.
+    # The student must not see missed key points or hidden misconceptions: check the feedback
+    # and replace it if it leaks.
     covered_norm = {p.strip().casefold() for p in grade.points_covered}
     uncovered = [p for p in rubric if p.strip().casefold() not in covered_norm]
-    check_against = list(grade.points_missed) + uncovered
+    # The hidden misconception list is just as confidential as the rubric.
+    check_against = list(grade.points_missed) + uncovered + list(question.misconceptions or [])
     replaced = check_leak(grade.feedback, check_against, exclude=question.prompt).leaked
     feedback = GENERIC_FEEDBACK if replaced else grade.feedback
 
