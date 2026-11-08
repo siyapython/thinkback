@@ -3,7 +3,12 @@ import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/compon
 import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsCoreOption } from 'echarts/core'
-import ReactEChartsCore from 'echarts-for-react/lib/core'
+import ReactEChartsCoreModule from 'echarts-for-react/lib/core'
+import { unwrapDefault } from '../lib/interop'
+
+// echarts-for-react/lib/core is CommonJS; under Vite's dev server the default import is the
+// module object ({ default: Component }) rather than the component, so unwrap it.
+const ReactEChartsCore = unwrapDefault(ReactEChartsCoreModule)
 
 echarts.use([BarChart, LineChart, FunnelChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer])
 
