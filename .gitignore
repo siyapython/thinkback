@@ -17,3 +17,6 @@ dist/
 # os / editor
 .DS_Store
 .vscode/
+
+# uploaded files
+backend/uploads/
