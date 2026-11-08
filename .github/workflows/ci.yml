@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+# Cancel a superseded run of the same branch to save minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# No secrets anywhere: the AI layer runs in its offline fake mode, so no API key is needed.
+env:
+  LLM_MODE: fake
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: thinkback
+          POSTGRES_PASSWORD: thinkback
+          POSTGRES_DB: thinkback
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U thinkback -d thinkback"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      # The default DATABASE_URL (thinkback:thinkback@localhost:5432/thinkback) matches the service.
+      - run: alembic upgrade head
+      - run: pytest
+
+  pipeline:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: thinkback
+          POSTGRES_PASSWORD: thinkback
+          POSTGRES_DB: thinkback
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U thinkback -d thinkback"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r backend/requirements.txt
+      # The pipeline reads the app's tables, so create them first.
+      - run: alembic upgrade head
+        working-directory: backend
+      # pipeline/ has no pyproject of its own; lint it with the backend's ruff settings.
+      - run: ruff check --config backend/pyproject.toml pipeline
+      - run: ruff format --check --config backend/pyproject.toml pipeline
+      - run: pytest pipeline
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx eslint .
+      - run: npx vitest run
+      - run: npm run build
